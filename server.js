@@ -26,14 +26,19 @@ var db = new sqlite3.Database(dbPath, function(err) {
         var app = express();
 
         //use the JSON parser from bodyParser
+        app.use(bodyParser.json());
 
         //serve static files from the /static sub-directory
         app.use(express.static(__dirname + '/static'));
 
         //create a router for our REST API
+        var apiRouter = express.Router();
+        apiRouter.use(tasksController.Router(db));
 
         //add routers from our various controllers
         //for now, all we have is a tasksController
+        app.use('/api', apiRouter);
+
 
         //mount all REST API resources under an /api resource
         //all of the controller resources will be relative to this
@@ -54,7 +59,7 @@ var db = new sqlite3.Database(dbPath, function(err) {
 
         //listen for the SIGINT signal (Ctrl+C) and shut down the database gracefully
         process.on('SIGINT', function() {
-            console.log('closing database...');
+            console.log('\nclosing database...');
             db.close(function(err) {
                 if (err) {
                     console.log('error closing database! ' + err);
